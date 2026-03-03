@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Attendance Dashboard</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 30px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #f4f4f4; }
+    h2 { margin-top: 30px; }
+
+    .filters {
+      display: flex;
+      gap: 12px;
+      align-items: end;
+      flex-wrap: wrap;
+      padding: 12px;
+      border: 1px solid #ddd;
+      margin-bottom: 14px;
+      background: #fafafa;
+    }
+    .filters label { display: block; font-size: 12px; color: #444; margin-bottom: 4px; }
+    .filters input, .filters button {
+      padding: 6px 8px;
+    }
+    .filters button { cursor: pointer; }
+  </style>
+</head>
+
+<body>
+<h2>Register Employee</h2>
+
+<input type="text" id="regName" placeholder="Enter name" />
+<input type="file" id="regPhoto" accept="image/*" />
+
+<button onclick="registerEmployee()">Register</button>
+
+<p id="regResult"></p>
+
+<hr />
+
+
+<h2>Take Attendance</h2>
+
+<button onclick="startCamera()">Open Camera</button>
+<br><br>
+
+<video id="video" width="400" autoplay style="display:none;"></video>
+<br><br>
+
+<canvas id="canvas" style="display:none;"></canvas>
+
+<p id="result"></p>
+
+<h2>Attendance Dashboard</h2>
+
+<h2>Employees</h2>
+<table id="employeesTable">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<h2>Attendance Records</h2>
+
+<!-- ✅ Filters -->
+<div class="filters">
+  <div>
+    <label for="monthFilter">Filter by Month</label>
+    <input type="month" id="monthFilter" />
+  </div>
+
+  <div>
+    <label for="fromDate">From Date</label>
+    <input type="date" id="fromDate" />
+  </div>
+
+  <div>
+    <label for="toDate">To Date</label>
+    <input type="date" id="toDate" />
+  </div>
+
+  <button id="applyBtn">Apply</button>
+  <button id="resetBtn">Reset</button>
+</div>
+
+<table id="attendanceTable">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Date</th>
+      <th>Time</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script>
+let attendanceRaw = []; // store original records from API
+
+async function registerEmployee() {
+    const name = document.getElementById("regName").value.trim();
+    const fileInput = document.getElementById("regPhoto");
+    const file = fileInput.files[0];
+
+    if (!name || !file) {
+        document.getElementById("regResult").innerText = "Please enter name and select a photo.";
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("photo", file);
+
+    const res = await fetch("/register/", {
+        method: "POST",
+        body: formData
+    });
+
+    const data = await res.json();
+    document.getElementById("regResult").innerText = data.result;
+
+    // refresh table
+    loadEmployees();
+}
+
+// -------- Helpers --------
+function pick(obj, keys, fallback = "") {
+  for (const k of keys) {
+    if (obj && obj[k] !== undefined && obj[k] !== null) return obj[k];
+  }
+  return fallback;
+}
+
+function toDateObj(v) {
+  // v can be ISO string like "2026-02-17T10:20:00"
+  if (!v) return null;
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function formatDate(d) {
+  if (!d) return "";
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+function formatTime(d) {
+  if (!d) return "";
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mi = String(d.getMinutes()).padStart(2, "0");
+  const ss = String(d.getSeconds()).padStart(2, "0");
+  return `${hh}:${mi}:${ss}`;
+}
+
+// Normalize records so your UI never shows "undefined"
+function normalizeRecord(r) {
+  const id = pick(r, ["id", "attendance_id"]);
+  const name = pick(r, ["name", "employee_name", "employee", "full_name"], "Unknown");
+  const ts = pick(r, ["timestamp", "created_at", "date", "time"], "");
+  const dt = toDateObj(ts);
+
+  return {
+    id,
+    name,
+    datetime: dt,
+    dateStr: dt ? formatDate(dt) : "",
+    timeStr: dt ? formatTime(dt) : ""
+  };
+}
+
+// -------- Load Data --------
+async function loadEmployees() {
+  const res = await fetch("/employees/");
+  const data = await res.json();
+
+  const table = document.querySelector("#employeesTable tbody");
+  table.innerHTML = "";
+
+  data.forEach(emp => {
+    table.innerHTML += `
+      <tr>
+        <td>${emp.id}</td>
+        <td>${emp.name}</td>
+      </tr>
+    `;
+  });
+}
+
+async function loadAttendance() {
+  const res = await fetch("/records/");
+  const data = await res.json();
+
+  attendanceRaw = data.map(normalizeRecord);
+  renderAttendance(); // initial render
+}
+
+// -------- Filtering + Rendering --------
+function renderAttendance() {
+  const monthVal = document.getElementById("monthFilter").value; // "YYYY-MM"
+  const fromVal = document.getElementById("fromDate").value;     // "YYYY-MM-DD"
+  const toVal = document.getElementById("toDate").value;         // "YYYY-MM-DD"
+
+  let filtered = [...attendanceRaw];
+
+  // Month filter
+  if (monthVal) {
+    filtered = filtered.filter(r => r.dateStr.startsWith(monthVal));
+  }
+
+  // Date range filter
+  if (fromVal) {
+    filtered = filtered.filter(r => r.dateStr >= fromVal);
+  }
+  if (toVal) {
+    filtered = filtered.filter(r => r.dateStr <= toVal);
+  }
+
+  // Sort newest first
+  filtered.sort((a, b) => (b.datetime?.getTime() || 0) - (a.datetime?.getTime() || 0));
+
+  const table = document.querySelector("#attendanceTable tbody");
+  table.innerHTML = "";
+
+  filtered.forEach(record => {
+    table.innerHTML += `
+      <tr>
+        <td>${record.id}</td>
+        <td>${record.name}</td>
+        <td>${record.dateStr || "-"}</td>
+        <td>${record.timeStr || "-"}</td>
+      </tr>
+    `;
+  });
+}
+
+// Buttons
+document.getElementById("applyBtn").addEventListener("click", renderAttendance);
+
+document.getElementById("resetBtn").addEventListener("click", () => {
+  document.getElementById("monthFilter").value = "";
+  document.getElementById("fromDate").value = "";
+  document.getElementById("toDate").value = "";
+  renderAttendance();
+});
+
+// Optional: auto-update when user changes inputs
+["monthFilter", "fromDate", "toDate"].forEach(id => {
+  document.getElementById(id).addEventListener("change", renderAttendance);
+});
+
+loadEmployees();
+loadAttendance();
+
+// -------- Camera + Attendance Marking --------
+const video = document.getElementById("video");
+
+let stream = null;
+let autoTimer = null;
+let isSending = false;
+
+async function startCamera() {
+  stream = await navigator.mediaDevices.getUserMedia({ video: true });
+  video.srcObject = stream;
+
+  video.style.display = "block";
+
+  // start auto capturing once camera opens
+  startAutoCapture();
+}
+
+function startAutoCapture() {
+  if (autoTimer) clearInterval(autoTimer);
+
+  autoTimer = setInterval(() => {
+    captureAndSend();
+  }, 1500); // every 1.5 sec
+}
+
+async function captureAndSend() {
+  if (!stream) return;
+  if (isSending) return;
+  if (video.videoWidth === 0 || video.videoHeight === 0) return;
+
+  const canvas = document.getElementById("canvas");
+  const context = canvas.getContext("2d");
+
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+
+  context.drawImage(video, 0, 0);
+
+  // reduce size a bit (faster upload)
+  const imageData = canvas.toDataURL("image/jpeg", 0.7);
+
+  isSending = true;
+  try {
+    const response = await fetch("/attendance/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image: imageData })
+    });
+
+    const result = await response.json();
+    const msg = result.result || "";
+
+    document.getElementById("result").innerText = "Result: " + msg;
+
+    // ✅ Pause for 2 minutes after success, then resume checking again
+if (msg.startsWith("Attendance marked") || msg.startsWith("Already marked")) {
+  await loadAttendance(); // refresh table
+
+  // stop current loop
+  clearInterval(autoTimer);
+  autoTimer = null;
+
+  document.getElementById("result").innerText =
+    "Result: " + msg + " | Waiting 2 minutes...";
+
+  // start again after 2 minutes
+  setTimeout(() => {
+    document.getElementById("result").innerText =
+      "Result: Buffer complete. Scanning again...";
+    startAutoCapture();
+  }, 2 * 60 * 1000); // 2 minutes
+}
+
+  } catch (e) {
+    console.error(e);
+  } finally {
+    isSending = false;
+  }
+}
+</script>
+</body>
+</html>

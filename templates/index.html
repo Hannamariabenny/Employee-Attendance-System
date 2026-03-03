@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart Attendance Dashboard</title>
+</head>
+<body>
+
+    <h1>Smart Attendance System</h1>
+
+    <!-- Register Employee -->
+    <h2>Register Employee</h2>
+    <form action="/register-employee/" method="post" enctype="multipart/form-data">
+        <input type="text" name="name" placeholder="Employee Name" required>
+        <input type="file" name="file" accept="image/*" required>
+        <button type="submit">Register</button>
+    </form>
+
+    <hr>
+
+    <!-- Mark Attendance -->
+    <h2>Mark Attendance</h2>
+    <form action="/mark-attendance/" method="post">
+        <select name="employee_id">
+            {% for emp in students %}
+                <option value="{{ emp.id }}">{{ emp.name }}</option>
+            {% endfor %}
+        </select>
+
+        <select name="status">
+            <option value="Present">Present</option>
+            <option value="Absent">Absent</option>
+        </select>
+
+        <button type="submit">Mark</button>
+    </form>
+
+    <hr>
+<h2>Live Attendance Camera</h2>
+
+<video id="liveVideo" width="400" autoplay></video>
+<br>
+<button onclick="markAttendance()">Mark Attendance</button>
+
+<script>
+let liveVideo = document.getElementById("liveVideo");
+
+navigator.mediaDevices.getUserMedia({ video: true })
+.then(stream => {
+    liveVideo.srcObject = stream;
+});
+
+function markAttendance() {
+
+    let canvas = document.createElement("canvas");
+    canvas.width = liveVideo.videoWidth;
+    canvas.height = liveVideo.videoHeight;
+
+    let ctx = canvas.getContext("2d");
+    ctx.drawImage(liveVideo, 0, 0);
+
+    let imageData = canvas.toDataURL("image/jpeg");
+
+    fetch("/recognize-live/", {
+        method: "POST",
+        body: new URLSearchParams({
+            image: imageData
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message);
+        location.reload();
+    });
+}
+</script>
+
+    <hr>
+
+    <!-- View Attendance -->
+    <h2>Attendance Records</h2>
+    <ul>
+        {% for record in attendance %}
+            <li>Employee ID: {{ record.employee_id }} - {{ record.status }}</li>
+        {% endfor %}
+    </ul>
+
+</body>
+</html>
