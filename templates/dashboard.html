@@ -1,343 +1,810 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Attendance Dashboard</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AttendanceOS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <style>
-    body { font-family: Arial; padding: 20px; }
-    table { border-collapse: collapse; width: 100%; margin-bottom: 30px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background-color: #f4f4f4; }
-    h2 { margin-top: 30px; }
+    :root {
+      --bg: #07090f;
+      --surface: #0e1219;
+      --surface2: #151c28;
+      --border: #1c2740;
+      --accent: #4fffb0;
+      --accent2: #ff6b6b;
+      --accent3: #ffd166;
+      --text: #dde4f0;
+      --muted: #4a5a7a;
+      --mono: 'IBM Plex Mono', monospace;
+      --head: 'Syne', sans-serif;
+      --body: 'Manrope', sans-serif;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:var(--bg); color:var(--text); font-family:var(--body); min-height:100vh; overflow-x:hidden; }
+    body::before {
+      content:''; position:fixed; inset:0;
+      background-image: linear-gradient(rgba(79,255,176,0.025) 1px,transparent 1px), linear-gradient(90deg,rgba(79,255,176,0.025) 1px,transparent 1px);
+      background-size:40px 40px; pointer-events:none; z-index:0;
+    }
 
-    .filters {
-      display: flex;
-      gap: 12px;
-      align-items: end;
-      flex-wrap: wrap;
-      padding: 12px;
-      border: 1px solid #ddd;
-      margin-bottom: 14px;
-      background: #fafafa;
+    header {
+      position:sticky; top:0; z-index:200;
+      background:rgba(7,9,15,0.92); backdrop-filter:blur(16px);
+      border-bottom:1px solid var(--border);
+      padding:0 32px; height:56px; display:flex; align-items:center; gap:16px;
     }
-    .filters label { display: block; font-size: 12px; color: #444; margin-bottom: 4px; }
-    .filters input, .filters button {
-      padding: 6px 8px;
-    }
-    .filters button { cursor: pointer; }
+    .logo { font-family:var(--head); font-size:18px; font-weight:800; color:var(--accent); letter-spacing:-0.02em; }
+    .logo span { color:var(--text); }
+    .header-pill { background:rgba(79,255,176,0.08); border:1px solid rgba(79,255,176,0.2); color:var(--accent); font-family:var(--mono); font-size:10px; padding:3px 10px; border-radius:20px; display:flex; align-items:center; gap:6px; }
+    .live-dot { width:6px; height:6px; border-radius:50%; background:var(--accent); box-shadow:0 0 8px var(--accent); animation:blink 1.4s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+    #clock { margin-left:auto; font-family:var(--mono); font-size:13px; color:var(--muted); }
+
+    .layout { display:grid; grid-template-columns:240px 1fr; min-height:calc(100vh - 56px); position:relative; z-index:1; }
+
+    .sidebar { background:var(--surface); border-right:1px solid var(--border); padding:20px 0; position:sticky; top:56px; height:calc(100vh - 56px); overflow-y:auto; }
+    .nav-section { font-family:var(--mono); font-size:9px; letter-spacing:0.2em; color:var(--muted); text-transform:uppercase; padding:0 18px 8px; margin-top:8px; }
+    .nav-item { display:flex; align-items:center; gap:10px; padding:11px 18px; cursor:pointer; font-size:13px; font-weight:500; color:var(--muted); border-left:2px solid transparent; transition:all 0.15s; }
+    .nav-item:hover { color:var(--text); background:rgba(255,255,255,0.02); }
+    .nav-item.active { color:var(--accent); border-left-color:var(--accent); background:rgba(79,255,176,0.05); }
+    .nav-item .icon { font-size:16px; width:20px; text-align:center; }
+    .nav-divider { height:1px; background:var(--border); margin:12px 0; }
+
+    .main { padding:28px 36px; overflow-y:auto; }
+    .page { display:none; }
+    .page.active { display:block; animation:pageIn 0.25s ease; }
+    @keyframes pageIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+    .page-title { font-family:var(--head); font-size:24px; font-weight:700; color:var(--text); margin-bottom:5px; }
+    .page-sub { font-size:13px; color:var(--muted); margin-bottom:24px; }
+
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px; margin-bottom:18px; }
+    .card-label { font-family:var(--mono); font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-bottom:16px; }
+
+    .field { margin-bottom:14px; }
+    .field-label { display:block; font-size:12px; font-weight:600; color:var(--muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.06em; }
+    input[type="text"], input[type="date"], input[type="month"] { width:100%; background:var(--surface2); border:1px solid var(--border); color:var(--text); padding:10px 14px; border-radius:8px; font-size:14px; font-family:var(--body); outline:none; transition:border-color 0.2s,box-shadow 0.2s; }
+    input:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(79,255,176,0.08); }
+
+    .btn { padding:10px 20px; border-radius:8px; border:none; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.15s; font-family:var(--body); display:inline-flex; align-items:center; gap:6px; }
+    .btn-primary { background:var(--accent); color:#000; }
+    .btn-primary:hover { background:#3de89b; transform:translateY(-1px); box-shadow:0 4px 20px rgba(79,255,176,0.25); }
+    .btn-primary:disabled { opacity:0.35; cursor:not-allowed; transform:none; box-shadow:none; }
+    .btn-ghost { background:transparent; color:var(--muted); border:1px solid var(--border); }
+    .btn-ghost:hover { color:var(--text); border-color:var(--muted); }
+    .btn-danger { background:rgba(255,107,107,0.1); color:var(--accent2); border:1px solid rgba(255,107,107,0.3); }
+
+    /* Steps */
+    .steps-bar { display:flex; margin-bottom:24px; }
+    .step { flex:1; display:flex; align-items:center; gap:10px; padding:12px 16px; background:var(--surface); border:1px solid var(--border); border-right:none; opacity:0.4; transition:all 0.2s; }
+    .step:first-child { border-radius:10px 0 0 10px; }
+    .step:last-child { border-radius:0 10px 10px 0; border-right:1px solid var(--border); }
+    .step.active { opacity:1; background:rgba(79,255,176,0.05); border-color:rgba(79,255,176,0.3); }
+    .step.done { opacity:0.7; }
+    .step-num { width:26px; height:26px; border-radius:50%; background:var(--surface2); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:11px; color:var(--muted); flex-shrink:0; }
+    .step.active .step-num { background:var(--accent); color:#000; border-color:var(--accent); }
+    .step.done .step-num { background:rgba(79,255,176,0.15); color:var(--accent); border-color:rgba(79,255,176,0.3); }
+    .step-title { font-size:12px; font-weight:600; color:var(--text); }
+    .step-desc { font-size:10px; color:var(--muted); }
+
+    /* Upload */
+    .upload-zone { border:2px dashed var(--border); border-radius:12px; padding:28px; text-align:center; cursor:pointer; position:relative; transition:all 0.2s; }
+    .upload-zone:hover { border-color:var(--accent); background:rgba(79,255,176,0.03); }
+    .upload-zone input[type="file"] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+    .uz-icon { font-size:28px; margin-bottom:8px; }
+    .uz-text { font-size:13px; color:var(--muted); }
+    .uz-text strong { color:var(--accent); }
+    .uz-count { display:inline-block; margin-top:8px; background:var(--surface2); border:1px solid var(--border); border-radius:20px; padding:3px 12px; font-size:11px; font-family:var(--mono); color:var(--accent); }
+
+    /* Photo grid */
+    .photo-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(78px,1fr)); gap:8px; margin-top:14px; }
+    .photo-thumb { position:relative; aspect-ratio:1; border-radius:8px; overflow:hidden; border:1px solid var(--border); background:var(--surface2); }
+    .photo-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+    .thumb-del { position:absolute; top:3px; right:3px; background:rgba(0,0,0,0.75); color:#fff; border:none; border-radius:50%; width:18px; height:18px; font-size:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+    .thumb-tag { position:absolute; bottom:3px; left:3px; font-family:var(--mono); font-size:8px; padding:2px 5px; border-radius:3px; }
+    .tag-upload { background:rgba(79,255,176,0.85); color:#000; }
+    .tag-live { background:rgba(255,107,107,0.85); color:#fff; }
+
+    /* Live cam for registration */
+    .live-cam-wrap { position:relative; display:inline-block; border-radius:12px; overflow:hidden; border:1px solid var(--border); }
+    #regVideo { display:block; width:320px; max-width:100%; border-radius:12px; }
+    .cam-overlay { position:absolute; inset:0; pointer-events:none; border-radius:12px; }
+    .scan-ring { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:110px; height:110px; border-radius:50%; border:2px solid transparent; transition:all 0.3s; }
+    .scanning .scan-ring { border-color:var(--accent); box-shadow:0 0 20px rgba(79,255,176,0.3); animation:ringPulse 1.5s infinite; }
+    @keyframes ringPulse { 0%,100%{transform:translate(-50%,-50%) scale(1);opacity:1} 50%{transform:translate(-50%,-50%) scale(1.1);opacity:0.5} }
+    .countdown-overlay { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-family:var(--mono); font-size:52px; font-weight:700; color:var(--accent); text-shadow:0 0 24px rgba(79,255,176,0.6); opacity:0; transition:opacity 0.15s; }
+    .countdown-overlay.show { opacity:1; }
+    .cam-status-bar { position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.75); backdrop-filter:blur(4px); padding:8px 14px; display:flex; align-items:center; gap:8px; font-family:var(--mono); font-size:11px; }
+    .cap-prog { flex:1; height:3px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden; }
+    .cap-prog-fill { height:100%; background:var(--accent); border-radius:2px; transition:width 0.3s; }
+
+    /* Flash */
+    .flash { position:fixed; inset:0; background:white; opacity:0; pointer-events:none; z-index:9999; transition:opacity 0.05s; }
+    .flash.go { opacity:0.55; }
+
+    /* Attendance camera */
+    .att-cam-wrap { position:relative; display:inline-block; border-radius:12px; overflow:hidden; border:1px solid var(--border); }
+    #video { display:block; width:480px; max-width:100%; border-radius:12px; }
+
+    /* ✅ Overlay canvas sits on top of video */
+    #overlayCanvas { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; border-radius:12px; }
+
+    .att-overlay { position:absolute; inset:0; pointer-events:none; border-radius:12px; }
+    .corner { position:absolute; width:20px; height:20px; border-color:var(--accent); border-style:solid; opacity:0; transition:opacity 0.3s; }
+    .att-cam-wrap.scanning .corner { opacity:1; }
+    .corner.tl { top:12px; left:12px; border-width:2px 0 0 2px; }
+    .corner.tr { top:12px; right:12px; border-width:2px 2px 0 0; }
+    .corner.bl { bottom:12px; left:12px; border-width:0 0 2px 2px; }
+    .corner.br { bottom:12px; right:12px; border-width:0 2px 2px 0; }
+    .scan-beam { position:absolute; left:12px; right:12px; height:1px; background:linear-gradient(90deg,transparent,var(--accent),transparent); top:50%; opacity:0; animation:beamMove 2s ease-in-out infinite; }
+    .att-cam-wrap.scanning .scan-beam { opacity:0.7; }
+    @keyframes beamMove { 0%{transform:translateY(-70px)} 100%{transform:translateY(70px)} }
+    .att-status { position:absolute; bottom:10px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.8); backdrop-filter:blur(4px); color:var(--accent); font-family:var(--mono); font-size:11px; padding:5px 14px; border-radius:20px; white-space:nowrap; z-index:10; }
+
+    /* Result box */
+    .result-box { margin-top:14px; padding:14px 18px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; font-size:13px; color:var(--muted); min-height:54px; transition:all 0.2s; }
+
+    /* Stats */
+    .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:20px; }
+    .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 18px; }
+    .stat-label { font-size:10px; font-family:var(--mono); color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; }
+    .stat-val { font-size:30px; font-family:var(--head); font-weight:700; color:var(--accent); margin-top:4px; }
+
+    /* Table */
+    .tbl-wrap { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    thead th { text-align:left; padding:9px 14px; font-family:var(--mono); font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; border-bottom:1px solid var(--border); background:var(--surface2); }
+    tbody td { padding:11px 14px; border-bottom:1px solid rgba(28,39,64,0.6); }
+    tbody tr:hover { background:rgba(255,255,255,0.015); }
+    .badge { display:inline-block; padding:2px 9px; border-radius:20px; font-size:11px; font-family:var(--mono); }
+    .badge-green { background:rgba(79,255,176,0.1); color:var(--accent); }
+    .badge-yellow { background:rgba(255,209,102,0.1); color:var(--accent3); }
+
+    .status-msg { padding:12px 16px; border-radius:8px; font-size:13px; font-weight:500; margin-top:14px; display:none; }
+    .status-msg.success { background:rgba(79,255,176,0.08); color:var(--accent); border:1px solid rgba(79,255,176,0.25); display:block; }
+    .status-msg.error { background:rgba(255,107,107,0.08); color:var(--accent2); border:1px solid rgba(255,107,107,0.25); display:block; }
+
+    .spinner { display:inline-block; width:13px; height:13px; border:2px solid rgba(0,0,0,0.2); border-top-color:#000; border-radius:50%; animation:spin 0.6s linear infinite; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+
+    .filters-row { display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; margin-bottom:16px; }
+    .filters-row .field { margin-bottom:0; flex:1; min-width:130px; }
+
+    #canvas, #regCanvas { display:none; }
   </style>
 </head>
-
 <body>
-<h2>Register Employee</h2>
 
-<input type="text" id="regName" placeholder="Enter name" />
-<input type="file" id="regPhoto" accept="image/*" />
+<div class="flash" id="flash"></div>
 
-<button onclick="registerEmployee()">Register</button>
+<header>
+  <div class="logo">Attendance<span>OS</span></div>
+  <div class="header-pill"><div class="live-dot"></div>SYSTEM ACTIVE</div>
+  <div id="clock"></div>
+</header>
 
-<p id="regResult"></p>
+<div class="layout">
+  <nav class="sidebar">
+    <div class="nav-section">Main</div>
+    <div class="nav-item active" data-page="camera" onclick="showPage(this)"><span class="icon">📷</span> Live Attendance</div>
+    <div class="nav-item" data-page="register" onclick="showPage(this)"><span class="icon">➕</span> Register Employee</div>
+    <div class="nav-divider"></div>
+    <div class="nav-section">Reports</div>
+    <div class="nav-item" data-page="records" onclick="showPage(this)"><span class="icon">📋</span> Attendance Records</div>
+    <div class="nav-item" data-page="employees" onclick="showPage(this)"><span class="icon">👥</span> Employees</div>
+  </nav>
 
-<hr />
+  <main class="main">
 
+    <!-- ══ LIVE ATTENDANCE ══ -->
+    <div class="page active" id="page-camera">
+      <div class="page-title">Live Attendance</div>
+      <div class="page-sub">Detects multiple faces simultaneously — auto-scans every 1.5 seconds</div>
+      <div style="display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start;">
+        <div>
+          <!-- ✅ Camera + overlay canvas stacked -->
+          <div class="att-cam-wrap" id="attCamWrap">
+            <video id="video" autoplay playsinline></video>
+            <canvas id="overlayCanvas"></canvas>
+            <div class="att-overlay">
+              <div class="corner tl"></div><div class="corner tr"></div>
+              <div class="corner bl"></div><div class="corner br"></div>
+              <div class="scan-beam"></div>
+            </div>
+            <div class="att-status" id="attStatus">● READY</div>
+          </div>
+          <canvas id="canvas"></canvas>
+          <div style="margin-top:12px; display:flex; gap:8px;">
+            <button class="btn btn-primary" onclick="startAttCamera()" id="btnAttStart">▶ Start Camera</button>
+            <button class="btn btn-ghost" onclick="stopAttCamera()" id="btnAttStop" style="display:none;">⏹ Stop</button>
+          </div>
+          <div class="result-box" id="attResult">Camera not started yet...</div>
+        </div>
 
-<h2>Take Attendance</h2>
+        <div style="flex:1; min-width:200px;">
+          <div class="card">
+            <div class="card-label">Today's Stats</div>
+            <div class="stat-label">Present Today</div>
+            <div class="stat-val" id="todayCount">—</div>
+            <div style="margin-top:18px; padding-top:14px; border-top:1px solid var(--border);">
+              <div class="stat-label" style="margin-bottom:6px;">Last Recognised</div>
+              <div style="font-size:14px; font-weight:600; color:var(--text);" id="lastRecog">—</div>
+              <div style="font-size:11px; color:var(--muted); font-family:var(--mono);" id="lastTime">—</div>
+            </div>
+          </div>
+          <!-- Legend -->
+          <div class="card">
+            <div class="card-label">Box Legend</div>
+            <div style="display:flex; flex-direction:column; gap:8px; font-size:13px;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width:14px;height:14px;border:2px solid #4fffb0;border-radius:2px;"></div>
+                <span>✅ Attendance marked</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width:14px;height:14px;border:2px solid #00e5ff;border-radius:2px;"></div>
+                <span>⏸ Already marked (cooldown)</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width:14px;height:14px;border:2px solid #ffd166;border-radius:2px;"></div>
+                <span>❓ Unknown person</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-<button onclick="startCamera()">Open Camera</button>
-<br><br>
+    <!-- ══ REGISTER EMPLOYEE ══ -->
+    <div class="page" id="page-register">
+      <div class="page-title">Register Employee</div>
+      <div class="page-sub">Upload photos + live capture combined for maximum accuracy</div>
 
-<video id="video" width="400" autoplay style="display:none;"></video>
-<br><br>
+      <div class="steps-bar">
+        <div class="step active" id="step1">
+          <div class="step-num">1</div>
+          <div><div class="step-title">Details & Upload</div><div class="step-desc">Name + optional photos</div></div>
+        </div>
+        <div class="step" id="step2">
+          <div class="step-num">2</div>
+          <div><div class="step-title">Live Capture</div><div class="step-desc">Auto-capture 7 photos</div></div>
+        </div>
+        <div class="step" id="step3">
+          <div class="step-num">3</div>
+          <div><div class="step-title">Review & Save</div><div class="step-desc">Confirm and register</div></div>
+        </div>
+      </div>
 
-<canvas id="canvas" style="display:none;"></canvas>
+      <!-- Step 1 -->
+      <div id="regStep1">
+        <div class="card" style="max-width:600px;">
+          <div class="card-label">Step 1 — Employee Info</div>
+          <div class="field">
+            <label class="field-label">Full Name *</label>
+            <input type="text" id="regName" placeholder="e.g. Hanna Maria Benny"/>
+          </div>
+          <div class="field">
+            <label class="field-label">Upload Photos <span style="color:var(--muted);font-weight:400;">(optional, up to 5)</span></label>
+            <div class="upload-zone">
+              <input type="file" id="uploadInput" accept="image/*" multiple onchange="handleUpload(event)"/>
+              <div class="uz-icon">📁</div>
+              <div class="uz-text">Click or drag photos here<br><strong>Passport / ID photos work best</strong></div>
+              <div class="uz-count" id="uploadCount">0 photos selected</div>
+            </div>
+          </div>
+          <div class="photo-grid" id="uploadPreviews"></div>
+          <div style="margin-top:18px;">
+            <button class="btn btn-primary" onclick="goToStep2()">Next — Live Capture →</button>
+            <div style="font-size:12px; color:var(--muted); margin-top:8px;">You can skip uploading and use only live capture</div>
+          </div>
+        </div>
+      </div>
 
-<p id="result"></p>
+      <!-- Step 2 -->
+      <div id="regStep2" style="display:none;">
+        <div style="display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start;">
+          <div>
+            <div class="live-cam-wrap" id="liveCamWrap">
+              <video id="regVideo" autoplay playsinline></video>
+              <div class="cam-overlay">
+                <div class="scan-ring"></div>
+                <div class="countdown-overlay" id="cdOverlay"></div>
+              </div>
+              <div class="cam-status-bar">
+                <span style="color:var(--accent);font-size:10px;" id="liveStatusText">READY</span>
+                <div class="cap-prog"><div class="cap-prog-fill" id="capProg" style="width:0%"></div></div>
+                <span style="color:var(--muted);font-size:10px;" id="captureCount">0 / 7</span>
+              </div>
+            </div>
+            <canvas id="regCanvas"></canvas>
+            <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="btn btn-primary" id="btnCapture" onclick="startLiveCapture()">📸 Auto-Capture 7 Photos</button>
+              <button class="btn btn-ghost" onclick="goBackStep1()">← Back</button>
+            </div>
+            <div class="status-msg" id="liveMsg"></div>
+          </div>
 
-<h2>Attendance Dashboard</h2>
+          <div style="flex:1; min-width:200px;">
+            <div class="card">
+              <div class="card-label">Live Captures</div>
+              <div style="display:flex; align-items:baseline; gap:8px; margin-bottom:12px;">
+                <span style="font-size:28px; font-family:var(--head); font-weight:700; color:var(--accent);" id="liveCount">0</span>
+                <span style="color:var(--muted); font-size:13px;">/ 7 captured</span>
+              </div>
+              <div class="photo-grid" id="livePreviews" style="grid-template-columns:repeat(3,1fr);"></div>
+              <div style="margin-top:14px; padding-top:14px; border-top:1px solid var(--border); font-size:12px; color:var(--text); line-height:2.2;">
+                🔄 Slowly turn head left &amp; right<br>
+                😐😊 Try different expressions<br>
+                💡 Ensure good lighting<br>
+                📏 Stay ~50cm from camera
+              </div>
+            </div>
+            <button class="btn btn-primary" style="width:100%;" id="btnToStep3" onclick="goToStep3()" disabled>Review &amp; Register →</button>
+          </div>
+        </div>
+      </div>
 
-<h2>Employees</h2>
-<table id="employeesTable">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Name</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
+      <!-- Step 3 -->
+      <div id="regStep3" style="display:none;">
+        <div class="card" style="max-width:600px;">
+          <div class="card-label">Step 3 — Review &amp; Register</div>
+          <div style="display:flex; gap:14px; align-items:center; margin-bottom:18px; padding:14px; background:var(--surface2); border-radius:10px; border:1px solid var(--border);">
+            <div style="font-size:32px;">👤</div>
+            <div>
+              <div style="font-size:16px; font-weight:700; color:var(--text);" id="reviewName">—</div>
+              <div style="font-size:12px; color:var(--muted); font-family:var(--mono);" id="reviewSummary">—</div>
+            </div>
+          </div>
+          <div class="card-label">All Photos (<span id="totalCount">0</span>)</div>
+          <div class="photo-grid" id="allPreviews"></div>
+          <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn btn-primary" id="btnFinalReg" onclick="finalRegister()">✅ Register Employee</button>
+            <button class="btn btn-ghost" onclick="goBackStep2()">← Re-capture</button>
+            <button class="btn btn-danger" onclick="resetReg()">✕ Start Over</button>
+          </div>
+          <div class="status-msg" id="finalMsg"></div>
+        </div>
+      </div>
+    </div>
 
-<h2>Attendance Records</h2>
+    <!-- ══ RECORDS ══ -->
+    <div class="page" id="page-records">
+      <div class="page-title">Attendance Records</div>
+      <div class="page-sub">Filter and view all attendance logs</div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-label">Total Records</div><div class="stat-val" id="statTotal">—</div></div>
+        <div class="stat-card"><div class="stat-label">Today</div><div class="stat-val" id="statToday">—</div></div>
+        <div class="stat-card"><div class="stat-label">This Month</div><div class="stat-val" id="statMonth">—</div></div>
+      </div>
+      <div class="card">
+        <div class="filters-row">
+          <div class="field"><label class="field-label">Month</label><input type="month" id="monthFilter"/></div>
+          <div class="field"><label class="field-label">From</label><input type="date" id="fromDate"/></div>
+          <div class="field"><label class="field-label">To</label><input type="date" id="toDate"/></div>
+          <button class="btn btn-ghost" onclick="resetFilters()" style="align-self:flex-end;">Reset</button>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Name</th><th>Date</th><th>Time</th><th>Status</th></tr></thead>
+            <tbody id="attBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
 
-<!-- ✅ Filters -->
-<div class="filters">
-  <div>
-    <label for="monthFilter">Filter by Month</label>
-    <input type="month" id="monthFilter" />
-  </div>
+    <!-- ══ EMPLOYEES ══ -->
+    <div class="page" id="page-employees">
+      <div class="page-title">Registered Employees</div>
+      <div class="page-sub">All employees enrolled in the system</div>
+      <div class="card">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Name</th><th>Photos Used</th><th>Registered</th><th>Action</th></tr></thead>
+            <tbody id="empBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
 
-  <div>
-    <label for="fromDate">From Date</label>
-    <input type="date" id="fromDate" />
-  </div>
-
-  <div>
-    <label for="toDate">To Date</label>
-    <input type="date" id="toDate" />
-  </div>
-
-  <button id="applyBtn">Apply</button>
-  <button id="resetBtn">Reset</button>
+  </main>
 </div>
 
-<table id="attendanceTable">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Name</th>
-      <th>Date</th>
-      <th>Time</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
-
 <script>
-let attendanceRaw = []; // store original records from API
+// Clock
+setInterval(() => { document.getElementById('clock').textContent = new Date().toLocaleTimeString(); }, 1000);
 
-async function registerEmployee() {
-    const name = document.getElementById("regName").value.trim();
-    const fileInput = document.getElementById("regPhoto");
-    const file = fileInput.files[0];
+// Navigation
+function showPage(el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  const pg = el.dataset.page;
+  document.getElementById('page-' + pg).classList.add('active');
+  if (pg === 'records') loadAttendance();
+  if (pg === 'employees') loadEmployees();
+}
 
-    if (!name || !file) {
-        document.getElementById("regResult").innerText = "Please enter name and select a photo.";
-        return;
-    }
+// ══ REGISTRATION ══
+let uploadedFiles = [], liveBlobs = [], regStream = null;
 
-    const formData = new FormData();
-    formData.append("name", name);
-    formData.append("photo", file);
+function handleUpload(e) {
+  uploadedFiles = [...uploadedFiles, ...Array.from(e.target.files)].slice(0, 5);
+  renderUploadPreviews();
+}
+function renderUploadPreviews() {
+  document.getElementById('uploadCount').textContent = `${uploadedFiles.length} photo${uploadedFiles.length !== 1 ? 's' : ''} selected`;
+  document.getElementById('uploadPreviews').innerHTML = uploadedFiles.map((f,i) => `
+    <div class="photo-thumb">
+      <img src="${URL.createObjectURL(f)}"/>
+      <button class="thumb-del" onclick="removeUpload(${i})">✕</button>
+      <div class="thumb-tag tag-upload">upload</div>
+    </div>`).join('');
+}
+function removeUpload(i) { uploadedFiles.splice(i,1); renderUploadPreviews(); }
 
-    const res = await fetch("/register/", {
-        method: "POST",
-        body: formData
-    });
+function setStep(n) {
+  [1,2,3].forEach(i => {
+    const el = document.getElementById('step'+i);
+    el.classList.remove('active','done');
+    if (i < n) el.classList.add('done');
+    else if (i === n) el.classList.add('active');
+  });
+  document.getElementById('regStep1').style.display = n===1?'block':'none';
+  document.getElementById('regStep2').style.display = n===2?'block':'none';
+  document.getElementById('regStep3').style.display = n===3?'block':'none';
+}
 
+function goToStep2() {
+  if (!document.getElementById('regName').value.trim()) { alert('Please enter the employee name first'); return; }
+  setStep(2); startRegCamera();
+}
+function goBackStep1() { stopRegCamera(); setStep(1); }
+function goBackStep2() { setStep(2); startRegCamera(); }
+
+function goToStep3() {
+  stopRegCamera();
+  const name = document.getElementById('regName').value.trim();
+  const total = uploadedFiles.length + liveBlobs.length;
+  document.getElementById('reviewName').textContent = name;
+  document.getElementById('reviewSummary').textContent = `${uploadedFiles.length} uploaded + ${liveBlobs.length} live = ${total} total photos`;
+  document.getElementById('totalCount').textContent = total;
+  document.getElementById('allPreviews').innerHTML =
+    uploadedFiles.map(f => `<div class="photo-thumb"><img src="${URL.createObjectURL(f)}"/><div class="thumb-tag tag-upload">upload</div></div>`).join('') +
+    liveBlobs.map(b => `<div class="photo-thumb"><img src="${URL.createObjectURL(b)}"/><div class="thumb-tag tag-live">live</div></div>`).join('');
+  setStep(3);
+}
+
+function resetReg() {
+  uploadedFiles = []; liveBlobs = [];
+  document.getElementById('regName').value = '';
+  document.getElementById('uploadInput').value = '';
+  ['uploadPreviews','livePreviews','allPreviews'].forEach(id => document.getElementById(id).innerHTML = '');
+  document.getElementById('uploadCount').textContent = '0 photos selected';
+  document.getElementById('liveCount').textContent = '0';
+  document.getElementById('capProg').style.width = '0%';
+  document.getElementById('captureCount').textContent = '0 / 7';
+  document.getElementById('finalMsg').className = 'status-msg';
+  document.getElementById('btnToStep3').disabled = true;
+  stopRegCamera(); setStep(1);
+}
+
+async function startRegCamera() {
+  try {
+    regStream = await navigator.mediaDevices.getUserMedia({ video: true });
+    document.getElementById('regVideo').srcObject = regStream;
+  } catch(e) { showMsg('liveMsg','Camera access denied. Only uploaded photos will be used.','error'); }
+}
+function stopRegCamera() {
+  if (regStream) { regStream.getTracks().forEach(t => t.stop()); regStream = null; }
+}
+
+async function startLiveCapture() {
+  if (!regStream) { showMsg('liveMsg','Camera not available','error'); return; }
+  liveBlobs = [];
+  document.getElementById('livePreviews').innerHTML = '';
+  document.getElementById('liveCount').textContent = '0';
+  document.getElementById('btnCapture').disabled = true;
+  document.getElementById('btnToStep3').disabled = true;
+  const total = 7;
+  document.getElementById('liveCamWrap').classList.add('scanning');
+  for (let i = 0; i < total; i++) {
+    await doCountdown(2);
+    await captureOne(i+1, total);
+    await sleep(200);
+  }
+  document.getElementById('liveCamWrap').classList.remove('scanning');
+  document.getElementById('liveStatusText').textContent = `✅ ${total} CAPTURED`;
+  document.getElementById('btnCapture').disabled = false;
+  document.getElementById('btnToStep3').disabled = false;
+  showMsg('liveMsg', `${total} live photos captured! Click "Review & Register" to continue.`, 'success');
+}
+
+function captureOne(num, total) {
+  return new Promise(resolve => {
+    const video = document.getElementById('regVideo');
+    const canvas = document.getElementById('regCanvas');
+    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    const flash = document.getElementById('flash');
+    flash.classList.add('go');
+    setTimeout(() => flash.classList.remove('go'), 80);
+    canvas.toBlob(blob => {
+      if (blob) {
+        liveBlobs.push(blob);
+        document.getElementById('liveCount').textContent = num;
+        document.getElementById('capProg').style.width = `${(num/total)*100}%`;
+        document.getElementById('captureCount').textContent = `${num} / ${total}`;
+        document.getElementById('livePreviews').innerHTML += `
+          <div class="photo-thumb">
+            <img src="${URL.createObjectURL(blob)}"/>
+            <div class="thumb-tag tag-live">#${num}</div>
+          </div>`;
+      }
+      resolve();
+    }, 'image/jpeg', 0.85);
+  });
+}
+
+async function doCountdown(from) {
+  const el = document.getElementById('cdOverlay');
+  const st = document.getElementById('liveStatusText');
+  for (let n = from; n >= 1; n--) {
+    el.textContent = n; el.classList.add('show');
+    st.textContent = `CAPTURING IN ${n}...`;
+    await sleep(650);
+  }
+  el.classList.remove('show'); el.textContent = '';
+  st.textContent = 'CAPTURING...';
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function finalRegister() {
+  const name = document.getElementById('regName').value.trim();
+  const total = uploadedFiles.length + liveBlobs.length;
+  if (!name) { showMsg('finalMsg','Name is missing','error'); return; }
+  if (total === 0) { showMsg('finalMsg','No photos available to register','error'); return; }
+  const btn = document.getElementById('btnFinalReg');
+  btn.innerHTML = '<span class="spinner"></span> Registering...';
+  btn.disabled = true;
+  const fd = new FormData();
+  fd.append('name', name);
+  uploadedFiles.forEach((f,i) => fd.append('photos', f, `upload_${i}.jpg`));
+  liveBlobs.forEach((b,i) => fd.append('photos', b, `live_${i}.jpg`));
+  try {
+    const res = await fetch('/register/', { method:'POST', body:fd });
     const data = await res.json();
-    document.getElementById("regResult").innerText = data.result;
-
-    // refresh table
-    loadEmployees();
-}
-
-// -------- Helpers --------
-function pick(obj, keys, fallback = "") {
-  for (const k of keys) {
-    if (obj && obj[k] !== undefined && obj[k] !== null) return obj[k];
+    const ok = data.result.includes('✅') || data.result.toLowerCase().includes('registered');
+    showMsg('finalMsg', data.result, ok ? 'success' : 'error');
+    if (ok) setTimeout(resetReg, 2500);
+  } catch(e) {
+    showMsg('finalMsg','Network error — is the server running?','error');
+  } finally {
+    btn.textContent = '✅ Register Employee';
+    btn.disabled = false;
   }
-  return fallback;
 }
 
-function toDateObj(v) {
-  // v can be ISO string like "2026-02-17T10:20:00"
-  if (!v) return null;
-  const d = new Date(v);
-  return isNaN(d.getTime()) ? null : d;
+function showMsg(id, msg, type) {
+  const el = document.getElementById(id);
+  el.textContent = msg; el.className = 'status-msg ' + type;
 }
 
-function formatDate(d) {
-  if (!d) return "";
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
+// ══ LIVE ATTENDANCE with multi-face detection ══
+let attStream = null, attTimer = null, isSending = false;
+
+async function startAttCamera() {
+  try {
+    attStream = await navigator.mediaDevices.getUserMedia({ video: true });
+    document.getElementById('video').srcObject = attStream;
+    document.getElementById('btnAttStart').style.display = 'none';
+    document.getElementById('btnAttStop').style.display = 'inline-flex';
+    document.getElementById('attCamWrap').classList.add('scanning');
+    document.getElementById('attStatus').textContent = '● SCANNING';
+    startAutoCapture();
+  } catch(e) { document.getElementById('attResult').textContent = 'Camera access denied'; }
 }
 
-function formatTime(d) {
-  if (!d) return "";
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mi = String(d.getMinutes()).padStart(2, "0");
-  const ss = String(d.getSeconds()).padStart(2, "0");
-  return `${hh}:${mi}:${ss}`;
-}
-
-// Normalize records so your UI never shows "undefined"
-function normalizeRecord(r) {
-  const id = pick(r, ["id", "attendance_id"]);
-  const name = pick(r, ["name", "employee_name", "employee", "full_name"], "Unknown");
-  const ts = pick(r, ["timestamp", "created_at", "date", "time"], "");
-  const dt = toDateObj(ts);
-
-  return {
-    id,
-    name,
-    datetime: dt,
-    dateStr: dt ? formatDate(dt) : "",
-    timeStr: dt ? formatTime(dt) : ""
-  };
-}
-
-// -------- Load Data --------
-async function loadEmployees() {
-  const res = await fetch("/employees/");
-  const data = await res.json();
-
-  const table = document.querySelector("#employeesTable tbody");
-  table.innerHTML = "";
-
-  data.forEach(emp => {
-    table.innerHTML += `
-      <tr>
-        <td>${emp.id}</td>
-        <td>${emp.name}</td>
-      </tr>
-    `;
-  });
-}
-
-async function loadAttendance() {
-  const res = await fetch("/records/");
-  const data = await res.json();
-
-  attendanceRaw = data.map(normalizeRecord);
-  renderAttendance(); // initial render
-}
-
-// -------- Filtering + Rendering --------
-function renderAttendance() {
-  const monthVal = document.getElementById("monthFilter").value; // "YYYY-MM"
-  const fromVal = document.getElementById("fromDate").value;     // "YYYY-MM-DD"
-  const toVal = document.getElementById("toDate").value;         // "YYYY-MM-DD"
-
-  let filtered = [...attendanceRaw];
-
-  // Month filter
-  if (monthVal) {
-    filtered = filtered.filter(r => r.dateStr.startsWith(monthVal));
-  }
-
-  // Date range filter
-  if (fromVal) {
-    filtered = filtered.filter(r => r.dateStr >= fromVal);
-  }
-  if (toVal) {
-    filtered = filtered.filter(r => r.dateStr <= toVal);
-  }
-
-  // Sort newest first
-  filtered.sort((a, b) => (b.datetime?.getTime() || 0) - (a.datetime?.getTime() || 0));
-
-  const table = document.querySelector("#attendanceTable tbody");
-  table.innerHTML = "";
-
-  filtered.forEach(record => {
-    table.innerHTML += `
-      <tr>
-        <td>${record.id}</td>
-        <td>${record.name}</td>
-        <td>${record.dateStr || "-"}</td>
-        <td>${record.timeStr || "-"}</td>
-      </tr>
-    `;
-  });
-}
-
-// Buttons
-document.getElementById("applyBtn").addEventListener("click", renderAttendance);
-
-document.getElementById("resetBtn").addEventListener("click", () => {
-  document.getElementById("monthFilter").value = "";
-  document.getElementById("fromDate").value = "";
-  document.getElementById("toDate").value = "";
-  renderAttendance();
-});
-
-// Optional: auto-update when user changes inputs
-["monthFilter", "fromDate", "toDate"].forEach(id => {
-  document.getElementById(id).addEventListener("change", renderAttendance);
-});
-
-loadEmployees();
-loadAttendance();
-
-// -------- Camera + Attendance Marking --------
-const video = document.getElementById("video");
-
-let stream = null;
-let autoTimer = null;
-let isSending = false;
-
-async function startCamera() {
-  stream = await navigator.mediaDevices.getUserMedia({ video: true });
-  video.srcObject = stream;
-
-  video.style.display = "block";
-
-  // start auto capturing once camera opens
-  startAutoCapture();
+function stopAttCamera() {
+  if (attStream) { attStream.getTracks().forEach(t => t.stop()); attStream = null; }
+  if (attTimer) { clearInterval(attTimer); attTimer = null; }
+  document.getElementById('btnAttStart').style.display = 'inline-flex';
+  document.getElementById('btnAttStop').style.display = 'none';
+  document.getElementById('attCamWrap').classList.remove('scanning');
+  document.getElementById('attStatus').textContent = '● READY';
+  // Clear overlay
+  const oc = document.getElementById('overlayCanvas');
+  oc.getContext('2d').clearRect(0,0,oc.width,oc.height);
+  document.getElementById('attResult').textContent = 'Camera stopped.';
 }
 
 function startAutoCapture() {
-  if (autoTimer) clearInterval(autoTimer);
-
-  autoTimer = setInterval(() => {
-    captureAndSend();
-  }, 1500); // every 1.5 sec
+  if (attTimer) clearInterval(attTimer);
+  attTimer = setInterval(captureAndSend, 1500);
 }
 
 async function captureAndSend() {
-  if (!stream) return;
-  if (isSending) return;
-  if (video.videoWidth === 0 || video.videoHeight === 0) return;
+  const video = document.getElementById('video');
+  if (!attStream || isSending || video.videoWidth === 0) return;
 
-  const canvas = document.getElementById("canvas");
-  const context = canvas.getContext("2d");
+  const canvas = document.getElementById('canvas');
+  const overlayCanvas = document.getElementById('overlayCanvas');
+  const ctx = overlayCanvas.getContext('2d');
 
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
+  overlayCanvas.width = video.videoWidth;
+  overlayCanvas.height = video.videoHeight;
 
-  context.drawImage(video, 0, 0);
-
-  // reduce size a bit (faster upload)
-  const imageData = canvas.toDataURL("image/jpeg", 0.7);
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  const imageData = canvas.toDataURL('image/jpeg', 0.7);
 
   isSending = true;
   try {
-    const response = await fetch("/attendance/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    const res = await fetch('/attendance/', {
+      method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ image: imageData })
     });
+    const data = await res.json();
+    ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
 
-    const result = await response.json();
-    const msg = result.result || "";
+    const results = data.results || [];
+    const message = data.message || '';
 
-    document.getElementById("result").innerText = "Result: " + msg;
+    // ✅ Draw bounding box + name label for each face
+    results.forEach(face => {
+      const { top, right, bottom, left } = face.location;
+      const scaleX = overlayCanvas.width / video.videoWidth;
+      const scaleY = overlayCanvas.height / video.videoHeight;
+      const x = left * scaleX, y = top * scaleY;
+      const w = (right - left) * scaleX, h = (bottom - top) * scaleY;
 
-    // ✅ Pause for 2 minutes after success, then resume checking again
-if (msg.startsWith("Attendance marked") || msg.startsWith("Already marked")) {
-  await loadAttendance(); // refresh table
+      // Color by status
+      let color = '#ffd166';
+      if (face.status === 'marked')   color = '#4fffb0';
+      if (face.status === 'cooldown') color = '#00e5ff';
 
-  // stop current loop
-  clearInterval(autoTimer);
-  autoTimer = null;
+      // Draw box
+      ctx.strokeStyle = color; ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, w, h);
 
-  document.getElementById("result").innerText =
-    "Result: " + msg + " | Waiting 2 minutes...";
+      // Corner accents
+      const cs = 14;
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = color;
+      ctx.beginPath(); ctx.moveTo(x,y+cs); ctx.lineTo(x,y); ctx.lineTo(x+cs,y); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x+w-cs,y); ctx.lineTo(x+w,y); ctx.lineTo(x+w,y+cs); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x,y+h-cs); ctx.lineTo(x,y+h); ctx.lineTo(x+cs,y+h); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x+w-cs,y+h); ctx.lineTo(x+w,y+h); ctx.lineTo(x+w,y+h-cs); ctx.stroke();
 
-  // start again after 2 minutes
-  setTimeout(() => {
-    document.getElementById("result").innerText =
-      "Result: Buffer complete. Scanning again...";
-    startAutoCapture();
-  }, 2 * 60 * 1000); // 2 minutes
+      // Name label
+      ctx.font = 'bold 13px IBM Plex Mono, monospace';
+      const textW = ctx.measureText(face.name).width;
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y - 26, textW + 16, 24);
+      ctx.fillStyle = '#000';
+      ctx.fillText(face.name, x + 8, y - 8);
+    });
+
+    // ✅ Update result display with badges
+    updateResultDisplay(results, message);
+
+    // ✅ Refresh today count if anyone was newly marked
+    if (results.some(r => r.status === 'marked')) {
+      loadTodayCount();
+      const names = results.filter(r => r.status === 'marked').map(r => r.name);
+      document.getElementById('lastRecog').textContent = names.join(', ');
+      document.getElementById('lastTime').textContent = new Date().toLocaleTimeString();
+    }
+
+  } catch(e) { console.error(e); }
+  finally { isSending = false; }
 }
 
-  } catch (e) {
-    console.error(e);
-  } finally {
-    isSending = false;
+function updateResultDisplay(results, message) {
+  const box = document.getElementById('attResult');
+  if (results.length === 0) {
+    box.innerHTML = `<span style="color:var(--muted);font-family:var(--mono);font-size:12px;">${message || 'No face detected'}</span>`;
+    return;
   }
+  const badges = results.map(r => {
+    let bg, color;
+    if (r.status === 'marked')        { bg = '#4fffb0'; color = '#000'; }
+    else if (r.status === 'cooldown') { bg = '#00e5ff'; color = '#000'; }
+    else                               { bg = '#ffd166'; color = '#000'; }
+    const icon = r.status === 'marked' ? '✅' : r.status === 'cooldown' ? '⏸' : '❓';
+    return `<span style="display:inline-flex;align-items:center;gap:5px;background:${bg};color:${color};padding:4px 12px;border-radius:20px;font-family:var(--mono);font-size:12px;font-weight:600;margin:3px;">${r.name} <span style="font-size:10px;">${icon}</span></span>`;
+  }).join('');
+
+  box.innerHTML = `
+    <div style="font-size:11px;color:var(--muted);font-family:var(--mono);margin-bottom:8px;">${results.length} face(s) detected</div>
+    <div>${badges}</div>
+    <div style="font-size:11px;color:var(--muted);margin-top:8px;">${message}</div>`;
 }
+
+// ══ DATA ══
+let attRaw = [];
+
+async function loadAttendance() {
+  const res = await fetch('/records/');
+  attRaw = await res.json();
+  const today = new Date().toISOString().split('T')[0];
+  const month = today.slice(0,7);
+  document.getElementById('statTotal').textContent = attRaw.length;
+  document.getElementById('statToday').textContent = attRaw.filter(r => r.timestamp?.startsWith(today)).length;
+  document.getElementById('statMonth').textContent = attRaw.filter(r => r.timestamp?.startsWith(month)).length;
+  renderAttendance();
+}
+
+function renderAttendance() {
+  const mv = document.getElementById('monthFilter').value;
+  const fv = document.getElementById('fromDate').value;
+  const tv = document.getElementById('toDate').value;
+  let filtered = attRaw.filter(r => {
+    const d = r.timestamp?.split('T')[0] || '';
+    if (mv && !d.startsWith(mv)) return false;
+    if (fv && d < fv) return false;
+    if (tv && d > tv) return false;
+    return true;
+  }).sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+  document.getElementById('attBody').innerHTML = filtered.length === 0
+    ? `<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:24px;">No records found</td></tr>`
+    : filtered.map(r => {
+        const dt = r.timestamp ? new Date(r.timestamp) : null;
+        return `<tr>
+          <td style="color:var(--muted);font-family:var(--mono);font-size:11px;">${r.id}</td>
+          <td><strong>${r.name || '—'}</strong></td>
+          <td>${dt ? dt.toLocaleDateString() : '—'}</td>
+          <td style="font-family:var(--mono);font-size:12px;">${dt ? dt.toLocaleTimeString() : '—'}</td>
+          <td><span class="badge badge-green">Present</span></td>
+        </tr>`;
+      }).join('');
+}
+
+function resetFilters() {
+  ['monthFilter','fromDate','toDate'].forEach(id => document.getElementById(id).value = '');
+  renderAttendance();
+}
+['monthFilter','fromDate','toDate'].forEach(id =>
+  document.getElementById(id).addEventListener('change', renderAttendance));
+
+async function loadEmployees() {
+  const res = await fetch('/employees/');
+  const data = await res.json();
+  document.getElementById('empBody').innerHTML = data.length === 0
+    ? `<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:24px;">No employees registered</td></tr>`
+    : data.map(e => `<tr>
+        <td style="color:var(--muted);font-family:var(--mono);font-size:11px;">${e.id}</td>
+        <td><strong>${e.name}</strong></td>
+        <td><span class="badge badge-yellow">${e.photo_count || 1} photos</span></td>
+        <td style="color:var(--muted);font-size:12px;">${e.created_at ? new Date(e.created_at).toLocaleDateString() : '—'}</td>
+        <td>
+          <button onclick="deleteEmployee(${e.id}, '${e.name}')"
+            style="background:rgba(255,107,107,0.1);color:#ff6b6b;border:1px solid rgba(255,107,107,0.3);padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-family:var(--body);">
+            🗑 Delete
+          </button>
+        </td>
+      </tr>`).join('');
+}
+
+async function deleteEmployee(id, name) {
+  if (!confirm(`Delete "${name}"?\nThis will also remove all their attendance records.`)) return;
+  try {
+    const res = await fetch(`/employees/${id}`, { method:'DELETE' });
+    const data = await res.json();
+    if (data.result) { alert(`✅ ${name} removed`); loadEmployees(); }
+  } catch(e) { alert('Error deleting employee'); }
+}
+
+async function loadTodayCount() {
+  const res = await fetch('/records/');
+  const data = await res.json();
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('todayCount').textContent = data.filter(r => r.timestamp?.startsWith(today)).length;
+}
+
+loadTodayCount();
 </script>
 </body>
 </html>

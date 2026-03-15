@@ -3,36 +3,41 @@ import numpy as np
 import face_recognition
 from .database import supabase
 
-async def register_employee_from_upload(name, photo):
-    image_bytes = await photo.read()
-    np_img = np.frombuffer(image_bytes, dtype=np.uint8)
+async def register_employee_from_upload(name, photos):
+    all_encodings = []
 
-    bgr = cv2.imdecode(np_img, cv2.IMREAD_COLOR)
-    if bgr is None:
-        return "Invalid image file"
+    for photo in photos:
+        image_bytes = await photo.read()
+        np_img = np.frombuffer(image_bytes, dtype=np.uint8)
+        bgr = cv2.imdecode(np_img, cv2.IMREAD_COLOR)
 
-    # ✅ Safe BGR -> RGB conversion
-    rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
+        if bgr is None:
+            continue
 
-    # ✅ Make sure array is contiguous + correct dtype for dlib
-    rgb = np.ascontiguousarray(rgb, dtype=np.uint8)
+        rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
+        rgb = np.ascontiguousarray(rgb, dtype=np.uint8)
 
-    # ✅ Detect face locations first (more stable)
-    locations = face_recognition.face_locations(rgb, model="hog")
+        locations = face_recognition.face_locations(rgb, model="hog")
+        if not locations:
+            continue
 
-    if not locations:
-        return "No face detected in photo"
+        encodings = face_recognition.face_encodings(rgb, known_face_locations=locations)
+        if encodings:
+            all_encodings.append(encodings[0])
 
-    encodings = face_recognition.face_encodings(rgb, known_face_locations=locations)
+    if not all_encodings:
+        return "No faces detected in any of the uploaded photos — please try clearer images"
 
-    if not encodings:
-        return "Face found, but encoding failed (try a clearer photo)"
+    if len(all_encodings) < 1:
+        return "No valid faces detected — please try again with clearer photos"
 
-    encoding = np.array(encodings[0], dtype=np.float64).tolist()
+    # ✅ Average all encodings into one robust encoding
+    avg_encoding = np.mean(all_encodings, axis=0).tolist()
 
     supabase.table("employees").insert({
         "name": name,
-        "embedding": encoding
+        "embedding": avg_encoding,
+        "photo_count": len(all_encodings)
     }).execute()
 
-    return f"Employee {name} registered successfully"
+    return f"✅ Employee '{name}' registered using {len(all_encodings)} photos"
