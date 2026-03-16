@@ -88,29 +88,17 @@
     .step-title { font-size:12px; font-weight:600; color:var(--text); }
     .step-desc { font-size:10px; color:var(--muted); }
 
-    /* Upload */
-    .upload-zone { border:2px dashed var(--border); border-radius:12px; padding:28px; text-align:center; cursor:pointer; position:relative; transition:all 0.2s; }
-    .upload-zone:hover { border-color:var(--accent); background:rgba(79,255,176,0.03); }
-    .upload-zone input[type="file"] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
-    .uz-icon { font-size:28px; margin-bottom:8px; }
-    .uz-text { font-size:13px; color:var(--muted); }
-    .uz-text strong { color:var(--accent); }
-    .uz-count { display:inline-block; margin-top:8px; background:var(--surface2); border:1px solid var(--border); border-radius:20px; padding:3px 12px; font-size:11px; font-family:var(--mono); color:var(--accent); }
-
     /* Photo grid */
     .photo-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(78px,1fr)); gap:8px; margin-top:14px; }
     .photo-thumb { position:relative; aspect-ratio:1; border-radius:8px; overflow:hidden; border:1px solid var(--border); background:var(--surface2); }
     .photo-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
-    .thumb-del { position:absolute; top:3px; right:3px; background:rgba(0,0,0,0.75); color:#fff; border:none; border-radius:50%; width:18px; height:18px; font-size:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-    .thumb-tag { position:absolute; bottom:3px; left:3px; font-family:var(--mono); font-size:8px; padding:2px 5px; border-radius:3px; }
-    .tag-upload { background:rgba(79,255,176,0.85); color:#000; }
-    .tag-live { background:rgba(255,107,107,0.85); color:#fff; }
+    .thumb-tag { position:absolute; bottom:3px; left:3px; font-family:var(--mono); font-size:8px; padding:2px 5px; border-radius:3px; background:rgba(255,107,107,0.85); color:#fff; }
 
     /* Live cam for registration */
     .live-cam-wrap { position:relative; display:inline-block; border-radius:12px; overflow:hidden; border:1px solid var(--border); }
-    #regVideo { display:block; width:320px; max-width:100%; border-radius:12px; }
+    #regVideo { display:block; width:360px; max-width:100%; border-radius:12px; }
     .cam-overlay { position:absolute; inset:0; pointer-events:none; border-radius:12px; }
-    .scan-ring { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:110px; height:110px; border-radius:50%; border:2px solid transparent; transition:all 0.3s; }
+    .scan-ring { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:130px; height:130px; border-radius:50%; border:2px solid transparent; transition:all 0.3s; }
     .scanning .scan-ring { border-color:var(--accent); box-shadow:0 0 20px rgba(79,255,176,0.3); animation:ringPulse 1.5s infinite; }
     @keyframes ringPulse { 0%,100%{transform:translate(-50%,-50%) scale(1);opacity:1} 50%{transform:translate(-50%,-50%) scale(1.1);opacity:0.5} }
     .countdown-overlay { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-family:var(--mono); font-size:52px; font-weight:700; color:var(--accent); text-shadow:0 0 24px rgba(79,255,176,0.6); opacity:0; transition:opacity 0.15s; }
@@ -126,10 +114,7 @@
     /* Attendance camera */
     .att-cam-wrap { position:relative; display:inline-block; border-radius:12px; overflow:hidden; border:1px solid var(--border); }
     #video { display:block; width:480px; max-width:100%; border-radius:12px; }
-
-    /* ✅ Overlay canvas sits on top of video */
     #overlayCanvas { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; border-radius:12px; }
-
     .att-overlay { position:absolute; inset:0; pointer-events:none; border-radius:12px; }
     .corner { position:absolute; width:20px; height:20px; border-color:var(--accent); border-style:solid; opacity:0; transition:opacity 0.3s; }
     .att-cam-wrap.scanning .corner { opacity:1; }
@@ -142,16 +127,13 @@
     @keyframes beamMove { 0%{transform:translateY(-70px)} 100%{transform:translateY(70px)} }
     .att-status { position:absolute; bottom:10px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.8); backdrop-filter:blur(4px); color:var(--accent); font-family:var(--mono); font-size:11px; padding:5px 14px; border-radius:20px; white-space:nowrap; z-index:10; }
 
-    /* Result box */
     .result-box { margin-top:14px; padding:14px 18px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; font-size:13px; color:var(--muted); min-height:54px; transition:all 0.2s; }
 
-    /* Stats */
     .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:20px; }
     .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 18px; }
     .stat-label { font-size:10px; font-family:var(--mono); color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; }
     .stat-val { font-size:30px; font-family:var(--head); font-weight:700; color:var(--accent); margin-top:4px; }
 
-    /* Table */
     .tbl-wrap { overflow-x:auto; }
     table { width:100%; border-collapse:collapse; font-size:13px; }
     thead th { text-align:left; padding:9px 14px; font-family:var(--mono); font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; border-bottom:1px solid var(--border); background:var(--surface2); }
@@ -172,6 +154,15 @@
     .filters-row .field { margin-bottom:0; flex:1; min-width:130px; }
 
     #canvas, #regCanvas { display:none; }
+
+    /* Capture grid dots (empty slots) */
+    .capture-slot {
+      aspect-ratio:1; border-radius:8px;
+      border:1px dashed var(--border);
+      background:var(--surface2);
+      display:flex; align-items:center; justify-content:center;
+      font-family:var(--mono); font-size:10px; color:var(--muted);
+    }
   </style>
 </head>
 <body>
@@ -203,7 +194,6 @@
       <div class="page-sub">Detects multiple faces simultaneously — auto-scans every 1.5 seconds</div>
       <div style="display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start;">
         <div>
-          <!-- ✅ Camera + overlay canvas stacked -->
           <div class="att-cam-wrap" id="attCamWrap">
             <video id="video" autoplay playsinline></video>
             <canvas id="overlayCanvas"></canvas>
@@ -233,41 +223,32 @@
               <div style="font-size:11px; color:var(--muted); font-family:var(--mono);" id="lastTime">—</div>
             </div>
           </div>
-          <!-- Legend -->
           <div class="card">
             <div class="card-label">Box Legend</div>
             <div style="display:flex; flex-direction:column; gap:8px; font-size:13px;">
-              <div style="display:flex; align-items:center; gap:10px;">
-                <div style="width:14px;height:14px;border:2px solid #4fffb0;border-radius:2px;"></div>
-                <span>✅ Attendance marked</span>
-              </div>
-              <div style="display:flex; align-items:center; gap:10px;">
-                <div style="width:14px;height:14px;border:2px solid #00e5ff;border-radius:2px;"></div>
-                <span>⏸ Already marked (cooldown)</span>
-              </div>
-              <div style="display:flex; align-items:center; gap:10px;">
-                <div style="width:14px;height:14px;border:2px solid #ffd166;border-radius:2px;"></div>
-                <span>❓ Unknown person</span>
-              </div>
+              <div style="display:flex; align-items:center; gap:10px;"><div style="width:14px;height:14px;border:2px solid #4fffb0;border-radius:2px;flex-shrink:0;"></div><span>✅ Attendance marked</span></div>
+              <div style="display:flex; align-items:center; gap:10px;"><div style="width:14px;height:14px;border:2px solid #00e5ff;border-radius:2px;flex-shrink:0;"></div><span>⏸ Already marked</span></div>
+              <div style="display:flex; align-items:center; gap:10px;"><div style="width:14px;height:14px;border:2px solid #ffd166;border-radius:2px;flex-shrink:0;"></div><span>❓ Unknown person</span></div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ══ REGISTER EMPLOYEE ══ -->
+    <!-- ══ REGISTER EMPLOYEE (Live only) ══ -->
     <div class="page" id="page-register">
       <div class="page-title">Register Employee</div>
-      <div class="page-sub">Upload photos + live capture combined for maximum accuracy</div>
+      <div class="page-sub">10 live photos captured automatically from webcam</div>
 
+      <!-- 2-step bar -->
       <div class="steps-bar">
         <div class="step active" id="step1">
           <div class="step-num">1</div>
-          <div><div class="step-title">Details & Upload</div><div class="step-desc">Name + optional photos</div></div>
+          <div><div class="step-title">Enter Name</div><div class="step-desc">Employee details</div></div>
         </div>
         <div class="step" id="step2">
           <div class="step-num">2</div>
-          <div><div class="step-title">Live Capture</div><div class="step-desc">Auto-capture 7 photos</div></div>
+          <div><div class="step-title">Live Capture</div><div class="step-desc">Auto-capture 10 photos</div></div>
         </div>
         <div class="step" id="step3">
           <div class="step-num">3</div>
@@ -275,32 +256,21 @@
         </div>
       </div>
 
-      <!-- Step 1 -->
+      <!-- Step 1: Name only -->
       <div id="regStep1">
-        <div class="card" style="max-width:600px;">
-          <div class="card-label">Step 1 — Employee Info</div>
+        <div class="card" style="max-width:480px;">
+          <div class="card-label">Step 1 — Employee Name</div>
           <div class="field">
             <label class="field-label">Full Name *</label>
-            <input type="text" id="regName" placeholder="e.g. Hanna Maria Benny"/>
+            <input type="text" id="regName" placeholder="e.g. Hanna Maria Benny" onkeydown="if(event.key==='Enter') goToStep2()"/>
           </div>
-          <div class="field">
-            <label class="field-label">Upload Photos <span style="color:var(--muted);font-weight:400;">(optional, up to 5)</span></label>
-            <div class="upload-zone">
-              <input type="file" id="uploadInput" accept="image/*" multiple onchange="handleUpload(event)"/>
-              <div class="uz-icon">📁</div>
-              <div class="uz-text">Click or drag photos here<br><strong>Passport / ID photos work best</strong></div>
-              <div class="uz-count" id="uploadCount">0 photos selected</div>
-            </div>
-          </div>
-          <div class="photo-grid" id="uploadPreviews"></div>
-          <div style="margin-top:18px;">
-            <button class="btn btn-primary" onclick="goToStep2()">Next — Live Capture →</button>
-            <div style="font-size:12px; color:var(--muted); margin-top:8px;">You can skip uploading and use only live capture</div>
+          <div style="margin-top:6px;">
+            <button class="btn btn-primary" onclick="goToStep2()">Next — Start Camera →</button>
           </div>
         </div>
       </div>
 
-      <!-- Step 2 -->
+      <!-- Step 2: Live capture -->
       <div id="regStep2" style="display:none;">
         <div style="display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start;">
           <div>
@@ -313,25 +283,24 @@
               <div class="cam-status-bar">
                 <span style="color:var(--accent);font-size:10px;" id="liveStatusText">READY</span>
                 <div class="cap-prog"><div class="cap-prog-fill" id="capProg" style="width:0%"></div></div>
-                <span style="color:var(--muted);font-size:10px;" id="captureCount">0 / 7</span>
+                <span style="color:var(--muted);font-size:10px;" id="captureCount">0 / 10</span>
               </div>
             </div>
             <canvas id="regCanvas"></canvas>
-            <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
-              <button class="btn btn-primary" id="btnCapture" onclick="startLiveCapture()">📸 Auto-Capture 7 Photos</button>
+            <div style="margin-top:12px; display:flex; gap:8px;">
+              <button class="btn btn-primary" id="btnCapture" onclick="startLiveCapture()">📸 Auto-Capture 10 Photos</button>
               <button class="btn btn-ghost" onclick="goBackStep1()">← Back</button>
             </div>
             <div class="status-msg" id="liveMsg"></div>
           </div>
 
-          <div style="flex:1; min-width:200px;">
+          <div style="flex:1; min-width:220px;">
             <div class="card">
-              <div class="card-label">Live Captures</div>
-              <div style="display:flex; align-items:baseline; gap:8px; margin-bottom:12px;">
-                <span style="font-size:28px; font-family:var(--head); font-weight:700; color:var(--accent);" id="liveCount">0</span>
-                <span style="color:var(--muted); font-size:13px;">/ 7 captured</span>
-              </div>
-              <div class="photo-grid" id="livePreviews" style="grid-template-columns:repeat(3,1fr);"></div>
+              <div class="card-label">Captured — <span id="liveCount">0</span> / 10</div>
+
+              <!-- 10 slots grid -->
+              <div class="photo-grid" id="livePreviews" style="grid-template-columns:repeat(5,1fr);"></div>
+
               <div style="margin-top:14px; padding-top:14px; border-top:1px solid var(--border); font-size:12px; color:var(--text); line-height:2.2;">
                 🔄 Slowly turn head left &amp; right<br>
                 😐😊 Try different expressions<br>
@@ -339,24 +308,28 @@
                 📏 Stay ~50cm from camera
               </div>
             </div>
-            <button class="btn btn-primary" style="width:100%;" id="btnToStep3" onclick="goToStep3()" disabled>Review &amp; Register →</button>
+            <button class="btn btn-primary" style="width:100%;" id="btnToStep3" onclick="goToStep3()" disabled>
+              Review &amp; Register →
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- Step 3 -->
+      <!-- Step 3: Review -->
       <div id="regStep3" style="display:none;">
-        <div class="card" style="max-width:600px;">
+        <div class="card" style="max-width:560px;">
           <div class="card-label">Step 3 — Review &amp; Register</div>
-          <div style="display:flex; gap:14px; align-items:center; margin-bottom:18px; padding:14px; background:var(--surface2); border-radius:10px; border:1px solid var(--border);">
-            <div style="font-size:32px;">👤</div>
+          <div style="display:flex; gap:14px; align-items:center; margin-bottom:20px; padding:14px; background:var(--surface2); border-radius:10px; border:1px solid var(--border);">
+            <div style="font-size:36px;">👤</div>
             <div>
-              <div style="font-size:16px; font-weight:700; color:var(--text);" id="reviewName">—</div>
-              <div style="font-size:12px; color:var(--muted); font-family:var(--mono);" id="reviewSummary">—</div>
+              <div style="font-size:18px; font-weight:700; color:var(--text);" id="reviewName">—</div>
+              <div style="font-size:12px; color:var(--muted); font-family:var(--mono); margin-top:3px;" id="reviewSummary">—</div>
             </div>
           </div>
-          <div class="card-label">All Photos (<span id="totalCount">0</span>)</div>
-          <div class="photo-grid" id="allPreviews"></div>
+
+          <div class="card-label">10 Captured Photos</div>
+          <div class="photo-grid" id="allPreviews" style="grid-template-columns:repeat(5,1fr);"></div>
+
           <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap;">
             <button class="btn btn-primary" id="btnFinalReg" onclick="finalRegister()">✅ Register Employee</button>
             <button class="btn btn-ghost" onclick="goBackStep2()">← Re-capture</button>
@@ -424,23 +397,10 @@ function showPage(el) {
   if (pg === 'employees') loadEmployees();
 }
 
-// ══ REGISTRATION ══
-let uploadedFiles = [], liveBlobs = [], regStream = null;
-
-function handleUpload(e) {
-  uploadedFiles = [...uploadedFiles, ...Array.from(e.target.files)].slice(0, 5);
-  renderUploadPreviews();
-}
-function renderUploadPreviews() {
-  document.getElementById('uploadCount').textContent = `${uploadedFiles.length} photo${uploadedFiles.length !== 1 ? 's' : ''} selected`;
-  document.getElementById('uploadPreviews').innerHTML = uploadedFiles.map((f,i) => `
-    <div class="photo-thumb">
-      <img src="${URL.createObjectURL(f)}"/>
-      <button class="thumb-del" onclick="removeUpload(${i})">✕</button>
-      <div class="thumb-tag tag-upload">upload</div>
-    </div>`).join('');
-}
-function removeUpload(i) { uploadedFiles.splice(i,1); renderUploadPreviews(); }
+// ══ REGISTRATION (live only) ══
+const TOTAL_PHOTOS = 10;
+let liveBlobs = [];
+let regStream = null;
 
 function setStep(n) {
   [1,2,3].forEach(i => {
@@ -455,93 +415,139 @@ function setStep(n) {
 }
 
 function goToStep2() {
-  if (!document.getElementById('regName').value.trim()) { alert('Please enter the employee name first'); return; }
-  setStep(2); startRegCamera();
+  const name = document.getElementById('regName').value.trim();
+  if (!name) { alert('Please enter the employee name first'); return; }
+  setStep(2);
+  initSlots();
+  startRegCamera();
 }
+
 function goBackStep1() { stopRegCamera(); setStep(1); }
-function goBackStep2() { setStep(2); startRegCamera(); }
+
+function goBackStep2() {
+  liveBlobs = [];
+  document.getElementById('liveCount').textContent = '0';
+  document.getElementById('capProg').style.width = '0%';
+  document.getElementById('captureCount').textContent = `0 / ${TOTAL_PHOTOS}`;
+  document.getElementById('btnToStep3').disabled = true;
+  document.getElementById('liveMsg').className = 'status-msg';
+  setStep(2);
+  initSlots();
+  startRegCamera();
+}
+
+// Pre-fill empty slots
+function initSlots() {
+  const grid = document.getElementById('livePreviews');
+  grid.innerHTML = Array.from({length: TOTAL_PHOTOS}, (_,i) =>
+    `<div class="capture-slot" id="slot${i}">${i+1}</div>`
+  ).join('');
+}
 
 function goToStep3() {
   stopRegCamera();
   const name = document.getElementById('regName').value.trim();
-  const total = uploadedFiles.length + liveBlobs.length;
   document.getElementById('reviewName').textContent = name;
-  document.getElementById('reviewSummary').textContent = `${uploadedFiles.length} uploaded + ${liveBlobs.length} live = ${total} total photos`;
-  document.getElementById('totalCount').textContent = total;
-  document.getElementById('allPreviews').innerHTML =
-    uploadedFiles.map(f => `<div class="photo-thumb"><img src="${URL.createObjectURL(f)}"/><div class="thumb-tag tag-upload">upload</div></div>`).join('') +
-    liveBlobs.map(b => `<div class="photo-thumb"><img src="${URL.createObjectURL(b)}"/><div class="thumb-tag tag-live">live</div></div>`).join('');
+  document.getElementById('reviewSummary').textContent = `${liveBlobs.length} live photos captured from webcam`;
+
+  // Show all photos in review
+  document.getElementById('allPreviews').innerHTML = liveBlobs.map((b,i) => `
+    <div class="photo-thumb">
+      <img src="${URL.createObjectURL(b)}"/>
+      <div class="thumb-tag">#${i+1}</div>
+    </div>`).join('');
+
   setStep(3);
 }
 
 function resetReg() {
-  uploadedFiles = []; liveBlobs = [];
+  liveBlobs = [];
   document.getElementById('regName').value = '';
-  document.getElementById('uploadInput').value = '';
-  ['uploadPreviews','livePreviews','allPreviews'].forEach(id => document.getElementById(id).innerHTML = '');
-  document.getElementById('uploadCount').textContent = '0 photos selected';
   document.getElementById('liveCount').textContent = '0';
   document.getElementById('capProg').style.width = '0%';
-  document.getElementById('captureCount').textContent = '0 / 7';
-  document.getElementById('finalMsg').className = 'status-msg';
+  document.getElementById('captureCount').textContent = `0 / ${TOTAL_PHOTOS}`;
   document.getElementById('btnToStep3').disabled = true;
-  stopRegCamera(); setStep(1);
+  document.getElementById('finalMsg').className = 'status-msg';
+  document.getElementById('liveMsg').className = 'status-msg';
+  stopRegCamera();
+  setStep(1);
 }
 
 async function startRegCamera() {
   try {
     regStream = await navigator.mediaDevices.getUserMedia({ video: true });
     document.getElementById('regVideo').srcObject = regStream;
-  } catch(e) { showMsg('liveMsg','Camera access denied. Only uploaded photos will be used.','error'); }
+    document.getElementById('btnCapture').disabled = false;
+    document.getElementById('liveStatusText').textContent = 'CAMERA READY';
+  } catch(e) {
+    showMsg('liveMsg', '❌ Camera access denied. Please allow camera permission.', 'error');
+  }
 }
+
 function stopRegCamera() {
   if (regStream) { regStream.getTracks().forEach(t => t.stop()); regStream = null; }
 }
 
 async function startLiveCapture() {
-  if (!regStream) { showMsg('liveMsg','Camera not available','error'); return; }
+  if (!regStream) { showMsg('liveMsg', 'Camera not available', 'error'); return; }
   liveBlobs = [];
-  document.getElementById('livePreviews').innerHTML = '';
+  initSlots();
   document.getElementById('liveCount').textContent = '0';
+  document.getElementById('capProg').style.width = '0%';
+  document.getElementById('captureCount').textContent = `0 / ${TOTAL_PHOTOS}`;
   document.getElementById('btnCapture').disabled = true;
   document.getElementById('btnToStep3').disabled = true;
-  const total = 7;
+  document.getElementById('liveMsg').className = 'status-msg';
+
   document.getElementById('liveCamWrap').classList.add('scanning');
-  for (let i = 0; i < total; i++) {
+
+  for (let i = 0; i < TOTAL_PHOTOS; i++) {
     await doCountdown(2);
-    await captureOne(i+1, total);
-    await sleep(200);
+    await captureOne(i);
+    await sleep(150);
   }
+
   document.getElementById('liveCamWrap').classList.remove('scanning');
-  document.getElementById('liveStatusText').textContent = `✅ ${total} CAPTURED`;
+  document.getElementById('liveStatusText').textContent = `✅ ALL ${TOTAL_PHOTOS} CAPTURED`;
+  document.getElementById('cdOverlay').classList.remove('show');
   document.getElementById('btnCapture').disabled = false;
   document.getElementById('btnToStep3').disabled = false;
-  showMsg('liveMsg', `${total} live photos captured! Click "Review & Register" to continue.`, 'success');
+  showMsg('liveMsg', `✅ ${TOTAL_PHOTOS} photos captured! Click "Review & Register" to continue.`, 'success');
 }
 
-function captureOne(num, total) {
+function captureOne(index) {
   return new Promise(resolve => {
     const video = document.getElementById('regVideo');
     const canvas = document.getElementById('regCanvas');
-    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
     canvas.getContext('2d').drawImage(video, 0, 0);
+
+    // Flash effect
     const flash = document.getElementById('flash');
     flash.classList.add('go');
     setTimeout(() => flash.classList.remove('go'), 80);
+
     canvas.toBlob(blob => {
       if (blob) {
         liveBlobs.push(blob);
+        const num = liveBlobs.length;
         document.getElementById('liveCount').textContent = num;
-        document.getElementById('capProg').style.width = `${(num/total)*100}%`;
-        document.getElementById('captureCount').textContent = `${num} / ${total}`;
-        document.getElementById('livePreviews').innerHTML += `
-          <div class="photo-thumb">
-            <img src="${URL.createObjectURL(blob)}"/>
-            <div class="thumb-tag tag-live">#${num}</div>
-          </div>`;
+        document.getElementById('capProg').style.width = `${(num/TOTAL_PHOTOS)*100}%`;
+        document.getElementById('captureCount').textContent = `${num} / ${TOTAL_PHOTOS}`;
+
+        // Replace slot with actual photo
+        const slot = document.getElementById(`slot${index}`);
+        if (slot) {
+          slot.outerHTML = `
+            <div class="photo-thumb" id="slot${index}">
+              <img src="${URL.createObjectURL(blob)}"/>
+              <div class="thumb-tag">#${num}</div>
+            </div>`;
+        }
       }
       resolve();
-    }, 'image/jpeg', 0.85);
+    }, 'image/jpeg', 0.9);
   });
 }
 
@@ -551,26 +557,27 @@ async function doCountdown(from) {
   for (let n = from; n >= 1; n--) {
     el.textContent = n; el.classList.add('show');
     st.textContent = `CAPTURING IN ${n}...`;
-    await sleep(650);
+    await sleep(600);
   }
-  el.classList.remove('show'); el.textContent = '';
-  st.textContent = 'CAPTURING...';
+  el.classList.remove('show');
+  st.textContent = 'CAPTURING... 📸';
 }
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 async function finalRegister() {
   const name = document.getElementById('regName').value.trim();
-  const total = uploadedFiles.length + liveBlobs.length;
   if (!name) { showMsg('finalMsg','Name is missing','error'); return; }
-  if (total === 0) { showMsg('finalMsg','No photos available to register','error'); return; }
+  if (liveBlobs.length === 0) { showMsg('finalMsg','No photos captured','error'); return; }
+
   const btn = document.getElementById('btnFinalReg');
   btn.innerHTML = '<span class="spinner"></span> Registering...';
   btn.disabled = true;
+
   const fd = new FormData();
   fd.append('name', name);
-  uploadedFiles.forEach((f,i) => fd.append('photos', f, `upload_${i}.jpg`));
   liveBlobs.forEach((b,i) => fd.append('photos', b, `live_${i}.jpg`));
+
   try {
     const res = await fetch('/register/', { method:'POST', body:fd });
     const data = await res.json();
@@ -578,7 +585,7 @@ async function finalRegister() {
     showMsg('finalMsg', data.result, ok ? 'success' : 'error');
     if (ok) setTimeout(resetReg, 2500);
   } catch(e) {
-    showMsg('finalMsg','Network error — is the server running?','error');
+    showMsg('finalMsg', 'Network error — is the server running?', 'error');
   } finally {
     btn.textContent = '✅ Register Employee';
     btn.disabled = false;
@@ -590,7 +597,7 @@ function showMsg(id, msg, type) {
   el.textContent = msg; el.className = 'status-msg ' + type;
 }
 
-// ══ LIVE ATTENDANCE with multi-face detection ══
+// ══ LIVE ATTENDANCE ══
 let attStream = null, attTimer = null, isSending = false;
 
 async function startAttCamera() {
@@ -612,7 +619,6 @@ function stopAttCamera() {
   document.getElementById('btnAttStop').style.display = 'none';
   document.getElementById('attCamWrap').classList.remove('scanning');
   document.getElementById('attStatus').textContent = '● READY';
-  // Clear overlay
   const oc = document.getElementById('overlayCanvas');
   oc.getContext('2d').clearRect(0,0,oc.width,oc.height);
   document.getElementById('attResult').textContent = 'Camera stopped.';
@@ -631,11 +637,8 @@ async function captureAndSend() {
   const overlayCanvas = document.getElementById('overlayCanvas');
   const ctx = overlayCanvas.getContext('2d');
 
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  overlayCanvas.width = video.videoWidth;
-  overlayCanvas.height = video.videoHeight;
-
+  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+  overlayCanvas.width = video.videoWidth; overlayCanvas.height = video.videoHeight;
   canvas.getContext('2d').drawImage(video, 0, 0);
   const imageData = canvas.toDataURL('image/jpeg', 0.7);
 
@@ -651,27 +654,20 @@ async function captureAndSend() {
     const results = data.results || [];
     const message = data.message || '';
 
-    // ✅ Draw bounding box + name label for each face
     results.forEach(face => {
       const { top, right, bottom, left } = face.location;
-      const scaleX = overlayCanvas.width / video.videoWidth;
-      const scaleY = overlayCanvas.height / video.videoHeight;
-      const x = left * scaleX, y = top * scaleY;
-      const w = (right - left) * scaleX, h = (bottom - top) * scaleY;
+      const x = left, y = top, w = right - left, h = bottom - top;
 
-      // Color by status
       let color = '#ffd166';
       if (face.status === 'marked')   color = '#4fffb0';
       if (face.status === 'cooldown') color = '#00e5ff';
 
-      // Draw box
+      // Box
       ctx.strokeStyle = color; ctx.lineWidth = 2;
       ctx.strokeRect(x, y, w, h);
 
       // Corner accents
-      const cs = 14;
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = color;
+      const cs = 14; ctx.lineWidth = 3;
       ctx.beginPath(); ctx.moveTo(x,y+cs); ctx.lineTo(x,y); ctx.lineTo(x+cs,y); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(x+w-cs,y); ctx.lineTo(x+w,y); ctx.lineTo(x+w,y+cs); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(x,y+h-cs); ctx.lineTo(x,y+h); ctx.lineTo(x+cs,y+h); ctx.stroke();
@@ -679,24 +675,19 @@ async function captureAndSend() {
 
       // Name label
       ctx.font = 'bold 13px IBM Plex Mono, monospace';
-      const textW = ctx.measureText(face.name).width;
-      ctx.fillStyle = color;
-      ctx.fillRect(x, y - 26, textW + 16, 24);
-      ctx.fillStyle = '#000';
-      ctx.fillText(face.name, x + 8, y - 8);
+      const tw = ctx.measureText(face.name).width;
+      ctx.fillStyle = color; ctx.fillRect(x, y-26, tw+16, 24);
+      ctx.fillStyle = '#000'; ctx.fillText(face.name, x+8, y-8);
     });
 
-    // ✅ Update result display with badges
     updateResultDisplay(results, message);
 
-    // ✅ Refresh today count if anyone was newly marked
     if (results.some(r => r.status === 'marked')) {
       loadTodayCount();
       const names = results.filter(r => r.status === 'marked').map(r => r.name);
       document.getElementById('lastRecog').textContent = names.join(', ');
       document.getElementById('lastTime').textContent = new Date().toLocaleTimeString();
     }
-
   } catch(e) { console.error(e); }
   finally { isSending = false; }
 }
@@ -709,13 +700,12 @@ function updateResultDisplay(results, message) {
   }
   const badges = results.map(r => {
     let bg, color;
-    if (r.status === 'marked')        { bg = '#4fffb0'; color = '#000'; }
-    else if (r.status === 'cooldown') { bg = '#00e5ff'; color = '#000'; }
-    else                               { bg = '#ffd166'; color = '#000'; }
-    const icon = r.status === 'marked' ? '✅' : r.status === 'cooldown' ? '⏸' : '❓';
+    if (r.status === 'marked')        { bg='#4fffb0'; color='#000'; }
+    else if (r.status === 'cooldown') { bg='#00e5ff'; color='#000'; }
+    else                               { bg='#ffd166'; color='#000'; }
+    const icon = r.status==='marked'?'✅':r.status==='cooldown'?'⏸':'❓';
     return `<span style="display:inline-flex;align-items:center;gap:5px;background:${bg};color:${color};padding:4px 12px;border-radius:20px;font-family:var(--mono);font-size:12px;font-weight:600;margin:3px;">${r.name} <span style="font-size:10px;">${icon}</span></span>`;
   }).join('');
-
   box.innerHTML = `
     <div style="font-size:11px;color:var(--muted);font-family:var(--mono);margin-bottom:8px;">${results.length} face(s) detected</div>
     <div>${badges}</div>
@@ -754,9 +744,9 @@ function renderAttendance() {
         const dt = r.timestamp ? new Date(r.timestamp) : null;
         return `<tr>
           <td style="color:var(--muted);font-family:var(--mono);font-size:11px;">${r.id}</td>
-          <td><strong>${r.name || '—'}</strong></td>
-          <td>${dt ? dt.toLocaleDateString() : '—'}</td>
-          <td style="font-family:var(--mono);font-size:12px;">${dt ? dt.toLocaleTimeString() : '—'}</td>
+          <td><strong>${r.name||'—'}</strong></td>
+          <td>${dt?dt.toLocaleDateString():'—'}</td>
+          <td style="font-family:var(--mono);font-size:12px;">${dt?dt.toLocaleTimeString():'—'}</td>
           <td><span class="badge badge-green">Present</span></td>
         </tr>`;
       }).join('');
@@ -777,10 +767,10 @@ async function loadEmployees() {
     : data.map(e => `<tr>
         <td style="color:var(--muted);font-family:var(--mono);font-size:11px;">${e.id}</td>
         <td><strong>${e.name}</strong></td>
-        <td><span class="badge badge-yellow">${e.photo_count || 1} photos</span></td>
-        <td style="color:var(--muted);font-size:12px;">${e.created_at ? new Date(e.created_at).toLocaleDateString() : '—'}</td>
+        <td><span class="badge badge-yellow">${e.photo_count||1} photos</span></td>
+        <td style="color:var(--muted);font-size:12px;">${e.created_at?new Date(e.created_at).toLocaleDateString():'—'}</td>
         <td>
-          <button onclick="deleteEmployee(${e.id}, '${e.name}')"
+          <button onclick="deleteEmployee(${e.id},'${e.name}')"
             style="background:rgba(255,107,107,0.1);color:#ff6b6b;border:1px solid rgba(255,107,107,0.3);padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-family:var(--body);">
             🗑 Delete
           </button>
